@@ -104,6 +104,9 @@ public class DriveConstants {
     public static final double turnPIDMinInput = 0; // Radians
     public static final double turnPIDMaxInput = 2 * Math.PI; // Radians
 
+    public static final double ODOMETRY_FREQUENCY = 100.0; // Hz
+    public static final String CANBusName = "CAN Bus 1";
+
     // PathPlanner configuration
     public static final double robotMassKg = 45; //FIXME
     public static final double robotMOI = 6.883; //FIXME

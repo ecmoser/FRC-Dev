@@ -12,6 +12,8 @@ public class ModuleIOInputsAutoLogged extends ModuleIO.ModuleIOInputs implements
         table.put("DriveAppliedVolts", driveAppliedVolts);
         table.put("DriveCurrentAmps", driveCurrentAmps);
         table.put("TurnConnected", turnConnected);
+        table.put("TurnEncoderConnected", turnEncoderConnected);
+        table.put("TurnAbsolutePosition", turnAbsolutePosition);
         table.put("TurnPosition", turnPosition);
         table.put("TurnVelocityRadPerSec", turnVelocityRadPerSec);
         table.put("TurnAppliedVolts", turnAppliedVolts);
@@ -29,6 +31,8 @@ public class ModuleIOInputsAutoLogged extends ModuleIO.ModuleIOInputs implements
         driveAppliedVolts = table.get("DriveAppliedVolts", driveAppliedVolts);
         driveCurrentAmps = table.get("DriveCurrentAmps", driveCurrentAmps);
         turnConnected = table.get("TurnConnected", turnConnected);
+        turnEncoderConnected = table.get("TurnEncoderConnected", turnEncoderConnected);
+        turnAbsolutePosition = table.get("TurnAbsolutePosition", turnAbsolutePosition);
         turnPosition = table.get("TurnPosition", turnPosition);
         turnVelocityRadPerSec = table.get("TurnVelocityRadPerSec", turnVelocityRadPerSec);
         turnAppliedVolts = table.get("TurnAppliedVolts", turnAppliedVolts);
@@ -46,6 +50,8 @@ public class ModuleIOInputsAutoLogged extends ModuleIO.ModuleIOInputs implements
         copy.driveAppliedVolts = this.driveAppliedVolts;
         copy.driveCurrentAmps = this.driveCurrentAmps;
         copy.turnConnected = this.turnConnected;
+        copy.turnEncoderConnected = this.turnEncoderConnected;
+        copy.turnAbsolutePosition = this.turnAbsolutePosition;
         copy.turnPosition = this.turnPosition;
         copy.turnVelocityRadPerSec = this.turnVelocityRadPerSec;
         copy.turnAppliedVolts = this.turnAppliedVolts;

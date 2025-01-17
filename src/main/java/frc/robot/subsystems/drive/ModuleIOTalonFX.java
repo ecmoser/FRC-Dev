@@ -40,7 +40,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.generated.TunerConstants;
 import java.util.Queue;
 
 /**
@@ -93,9 +92,9 @@ public class ModuleIOTalonFX implements ModuleIO {
     public ModuleIOTalonFX(
             SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants) {
         this.constants = constants;
-        driveTalon = new TalonFX(constants.DriveMotorId, TunerConstants.DrivetrainConstants.CANBusName);
-        turnTalon = new TalonFX(constants.SteerMotorId, TunerConstants.DrivetrainConstants.CANBusName);
-        cancoder = new CANcoder(constants.EncoderId, TunerConstants.DrivetrainConstants.CANBusName);
+        driveTalon = new TalonFX(constants.DriveMotorId);
+        turnTalon = new TalonFX(constants.SteerMotorId);
+        cancoder = new CANcoder(constants.EncoderId);
 
         // Configure drive motor
         var driveConfig = constants.DriveMotorInitialConfigs;
@@ -159,7 +158,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         turnCurrent = turnTalon.getStatorCurrent();
 
         // Configure periodic frames
-        BaseStatusSignal.setUpdateFrequencyForAll(Drive.ODOMETRY_FREQUENCY, drivePosition, turnPosition);
+        BaseStatusSignal.setUpdateFrequencyForAll(DriveConstants.ODOMETRY_FREQUENCY, drivePosition, turnPosition);
         BaseStatusSignal.setUpdateFrequencyForAll(
                 50.0,
                 driveVelocity,

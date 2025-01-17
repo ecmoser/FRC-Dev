@@ -80,6 +80,8 @@ public class ModuleIOSim implements ModuleIO {
 
         // Update turn inputs
         inputs.turnConnected = true;
+        inputs.turnEncoderConnected = true;
+        inputs.turnAbsolutePosition = moduleSimulation.getSteerAbsoluteFacing();
         inputs.turnPosition = moduleSimulation.getSteerAbsoluteFacing();
         inputs.turnVelocityRadPerSec =
                 moduleSimulation.getSteerAbsoluteEncoderSpeed().in(RadiansPerSecond);
