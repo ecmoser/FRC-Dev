@@ -21,7 +21,6 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -39,7 +38,6 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Queue;
@@ -63,7 +61,6 @@ public class ModuleIOSpark implements ModuleIO {
 
     // Closed loop controllers
     private final SparkClosedLoopController driveController;
-    private final SparkClosedLoopController turnController;
 
     // Queue inputs from odometry thread
     private final Queue<Double> timestampQueue;
@@ -114,7 +111,6 @@ public class ModuleIOSpark implements ModuleIO {
         driveEncoder = driveMotor.getEncoder();
         turnRelativeEncoder = turnSpark.getEncoder();
         driveController = driveMotor.getClosedLoopController();
-        turnController = turnSpark.getClosedLoopController();
         turnPID = new PIDController(turnKp, turnKi, turnKd);
         turnPID.enableContinuousInput(turnPIDMinInput, turnPIDMaxInput); // Ensure continuous input is enabled
         turnPID.setTolerance(10);
