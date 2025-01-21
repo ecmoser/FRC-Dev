@@ -15,12 +15,14 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.mechanisms.swerve.LegacySwerveModule.ClosedLoopOutputType;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
@@ -107,6 +109,11 @@ public class DriveConstants {
 
     public static final double ODOMETRY_FREQUENCY = 100.0; // Hz
     public static final String CANBusName = "CAN Bus 1";
+
+    public static final double slipCurrent = 120.0;
+    public static final double statorCurrentLimit = 80.0;
+    public static final double supplyCurrentLimit = 60.0;
+    public static final ClosedLoopOutputType driveMotorClosedLoopOutput = ClosedLoopOutputType.Voltage;
 
     // PathPlanner configuration
     public static final double robotMassKg = 45; //FIXME
