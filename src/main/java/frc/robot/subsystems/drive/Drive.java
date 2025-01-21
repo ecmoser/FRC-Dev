@@ -113,7 +113,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Gyro Positoin", rawGyroRotation.getRadians());
+        SmartDashboard.putNumber("Gyro Position", rawGyroRotation.getRadians());
 
         for (int module = 0; module < modules.length; module += 1) {
             SmartDashboard.putNumber(switch (module) {
@@ -311,5 +311,9 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     /** Returns the maximum angular speed in radians per sec. */
     public double getMaxAngularSpeedRadPerSec() {
         return maxSpeedMetersPerSec / driveBaseRadius;
+    }
+
+    public void resetGyro(){
+        gyroIO.reset();
     }
 }
