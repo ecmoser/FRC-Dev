@@ -20,17 +20,12 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.ClosedLoopSlot;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -51,20 +46,15 @@ public class ModuleIOMixed implements ModuleIO {
     private final Rotation2d zeroRotation;
 
     // Hardware objects
-    private final SparkMax driveMotor;
     private final SparkMax turnSpark;
-    private final RelativeEncoder driveEncoder;
     private final RelativeEncoder turnRelativeEncoder;
     private final CANcoder cancoder;
     private final StatusSignal<Angle> turnAbsolutePosition;
     private final PIDController turnPID;
 
-    // Closed loop controllers
-    private final SparkClosedLoopController driveController;
-
     // Queue inputs from odometry thread
     private final Queue<Double> timestampQueue;
-    private final Queue<Double> drivePositionQueue;
+    //private final Queue<Double> drivePositionQueue;
     private final Queue<Double> turnPositionQueue;
 
     // Connection debouncers
@@ -83,15 +73,6 @@ public class ModuleIOMixed implements ModuleIO {
             case 2 -> backLeftZeroRotation;
             case 3 -> backRightZeroRotation;
             default -> new Rotation2d();};
-        driveMotor = new SparkMax(
-                switch (module) {
-                    case 0 -> frontLeftDriveCanId;
-                    case 1 -> frontRightDriveCanId;
-                    case 2 -> backLeftDriveCanId;
-                    case 3 -> backRightDriveCanId;
-                    default -> 0;
-                },
-                MotorType.kBrushless);
         turnSpark = new SparkMax(
                 switch (module) {
                     case 0 -> frontLeftTurnCanId;
@@ -108,45 +89,10 @@ public class ModuleIOMixed implements ModuleIO {
                 case 3 -> backRightEncoderID;
                 default -> 0;
         });
-        driveEncoder = driveMotor.getEncoder();
         turnRelativeEncoder = turnSpark.getEncoder();
-        driveController = driveMotor.getClosedLoopController();
         turnPID = new PIDController(turnKp, turnKi, turnKd);
         turnPID.enableContinuousInput(turnPIDMinInput, turnPIDMaxInput); // Ensure continuous input is enabled
         turnPID.setTolerance(10);
-        // Configure drive motor
-        var driveConfig = new SparkFlexConfig();
-        driveConfig
-                .idleMode(IdleMode.kBrake)
-                .smartCurrentLimit(driveMotorCurrentLimit)
-                .voltageCompensation(12.0);
-        driveConfig
-                .encoder
-                .positionConversionFactor(driveEncoderPositionFactor)
-                .velocityConversionFactor(driveEncoderVelocityFactor)
-                .uvwMeasurementPeriod(10)
-                .uvwAverageDepth(2);
-        driveConfig
-                .closedLoop
-                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .pidf(
-                        driveKp, 0.0,
-                        driveKd, 0.0);
-        driveConfig
-                .signals
-                .primaryEncoderPositionAlwaysOn(true)
-                .primaryEncoderPositionPeriodMs((int) (1000.0 / odometryFrequency))
-                .primaryEncoderVelocityAlwaysOn(true)
-                .primaryEncoderVelocityPeriodMs(20)
-                .appliedOutputPeriodMs(20)
-                .busVoltagePeriodMs(20)
-                .outputCurrentPeriodMs(20);
-        tryUntilOk(
-                driveMotor,
-                5,
-                () -> driveMotor.configure(
-                        driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-        tryUntilOk(driveMotor, 5, () -> driveEncoder.setPosition(0.0));
 
         // Configure turn motor
         var turnConfig = new SparkMaxConfig();
@@ -189,7 +135,6 @@ public class ModuleIOMixed implements ModuleIO {
         // Create odometry queues
         turnSpark.getEncoder().setPosition(cancoder.getPosition().getValueAsDouble() * DriveConstants.turnEncoderPositionFactor);
         timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
-        drivePositionQueue = SparkOdometryThread.getInstance().registerSignal(driveMotor, driveEncoder::getPosition);
         turnPositionQueue = SparkOdometryThread.getInstance().registerSignal(turnSpark, cancoder.getAbsolutePosition()::getValueAsDouble);
     }
 
@@ -207,13 +152,6 @@ public class ModuleIOMixed implements ModuleIO {
     public void updateInputs(ModuleIOInputs inputs) {
         // Update drive inputs
         sparkStickyFault = false;
-        ifOk(driveMotor, driveEncoder::getPosition, (value) -> inputs.drivePositionRad = value);
-        ifOk(driveMotor, driveEncoder::getVelocity, (value) -> inputs.driveVelocityRadPerSec = value);
-        ifOk(
-                driveMotor,
-                new DoubleSupplier[] {driveMotor::getAppliedOutput, driveMotor::getBusVoltage},
-                (values) -> inputs.driveAppliedVolts = values[0] * values[1]);
-        ifOk(driveMotor, driveMotor::getOutputCurrent, (value) -> inputs.driveCurrentAmps = value);
         inputs.driveConnected = driveConnectedDebounce.calculate(!sparkStickyFault);
 
         // Update turn inputs
@@ -240,19 +178,18 @@ public class ModuleIOMixed implements ModuleIO {
         // Update odometry inputs
         inputs.odometryTimestamps =
                 timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
-        inputs.odometryDrivePositionsRad =
-                drivePositionQueue.stream().mapToDouble((Double value) -> value).toArray();
+        //inputs.odometryDrivePositionsRad =
+        //        drivePositionQueue.stream().mapToDouble((Double value) -> value).toArray();
         inputs.odometryTurnPositions = turnPositionQueue.stream()
                 .map((Double value) -> new Rotation2d(value).minus(zeroRotation))
                 .toArray(Rotation2d[]::new);
         timestampQueue.clear();
-        drivePositionQueue.clear();
+        //drivePositionQueue.clear();
         turnPositionQueue.clear();
     }
 
     @Override
     public void setDriveOpenLoop(double output) {
-        driveMotor.setVoltage(output);
     }
 
     @Override
@@ -262,9 +199,6 @@ public class ModuleIOMixed implements ModuleIO {
 
     @Override
     public void setDriveVelocity(double velocityRadPerSec) {
-        double ffVolts = driveKs * Math.signum(velocityRadPerSec) + driveKv * velocityRadPerSec;
-        driveController.setReference(
-                velocityRadPerSec, ControlType.kVelocity, ClosedLoopSlot.kSlot0, ffVolts, ArbFFUnits.kVoltage);
     }
 
     @Override
