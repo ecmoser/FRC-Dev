@@ -14,10 +14,9 @@
 package frc.robot.subsystems.drive;
 
 import static frc.robot.subsystems.drive.DriveConstants.*;
+import static frc.robot.util.PhoenixUtil.tryUntilOk;
 import static frc.robot.util.SparkUtil.*;
 import static frc.robot.util.SparkUtil.tryUntilOk;
-import static frc.robot.util.PhoenixUtil.*;
-import static frc.robot.util.PhoenixUtil.tryUntilOk;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
